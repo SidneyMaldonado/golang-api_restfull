@@ -38,6 +38,7 @@ func main(){
 
 }
 
+
 func getJsonResponse()([]byte, error) {
 	fruits := make(map[string]int)
 	fruits["Apples"] = 25
