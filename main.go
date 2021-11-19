@@ -25,9 +25,9 @@ type City struct {
 }
 
 type Cidade struct {
-	codCidade int
-	nome string
-	codestado int
+	Codcidade int
+	Nome string
+	Codestado int
 }
 
 type Fruits map[string]int
@@ -38,15 +38,15 @@ func main(){
 
 //	test()
 	var db, _ = conectarBanco()
-
-	query("select * from cidade", db)
-
+	var data []byte
+	data, _ = query("select * from cidade", db)
+	db.Close()
 
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 	r.Get("/", func(w http.ResponseWriter, r *http.Request ) {
 		response := []byte("")
-		response, _ = getJsonResponse()
+		response = data
 
 		_,_ = fmt.Fprint(w,  string(response) )
 		return
@@ -55,7 +55,6 @@ func main(){
 	_ = http.ListenAndServe(":3000", r)
 
 }
-
 
 func getJsonResponse()([]byte, error) {
 	fruits := make(map[string]int)
@@ -74,7 +73,8 @@ func getJsonResponse()([]byte, error) {
 
 func conectarBanco() (*sql.DB, error){
 
-	var banco, err = sql.Open("mysql","u475983679_aula:Senha@01!@tcp(sql395.main-hosting.eu:3306)/u475983679_aula")
+//	var banco, err = sql.Open("mysql","u475983679_aula:Senha@01!@tcp(sql395.main-hosting.eu:3306)/u475983679_aula")
+	var banco, err = sql.Open("mysql","root:@tcp(localhost:3306)/sistema")
 	if err != nil {
 		log.Printf("Error %s when opening DB\n", err)
 	} else {
@@ -83,32 +83,40 @@ func conectarBanco() (*sql.DB, error){
 	return banco, err
 }
 
-func query( comando string, db *sql.DB) (result *sql.Rows,error error){
+func query( comando string, db *sql.DB) (result []byte,error error){
 
 	var res, err = db.Query(comando)
 
+	var b []byte
 	defer res.Close()
+	var cidades []Cidade
 
 	if err != nil{
 		log.Printf("Erro ao recuperar dados")
 		log.Printf(err.Error())
 	} else {
 		log.Printf("Dados recuperado")
+
+		var i = 0
 		for res.Next(){
 
-			var cidade Cidade
-			err := res.Scan(&cidade.codCidade, &cidade.nome, &cidade.codestado)
+			var nova Cidade
+			err := res.Scan(&nova.Codcidade, &nova.Nome, &nova.Codestado)
+			cidades = append(cidades, nova)
+			i++
 			if err != nil {
-				log.Printf(err.Error())
+				fmt.Printf("Erro %s", err)
 			}
-			fmt.Printf("%v\n", cidade)
 		}
 	}
-	if res == nil {
-		log.Printf("sem dados para processar")
-	}
 
-	return res, err
+	b, err = json.Marshal(cidades)
+	if err != nil {
+		fmt.Printf("Erro %s", err)
+	}
+	//fmt.Printf( string(b))
+
+	return b, err
 
 }
 
