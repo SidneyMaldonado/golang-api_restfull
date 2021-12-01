@@ -31,16 +31,19 @@ type Cidade struct {
 	Codestado int
 }
 
+type Coluna struct {
+	ordem int
+	nome string
+	tipo string
+}
 type Registro struct {
-	coluna string
-	dado string
+	dados []interface{}
 }
 
 type Tabela struct {
-	nome string
+	estrutura []Coluna
 	registros []Registro
 }
-// falta implementar tabela e registros
 
 type Fruits map[string]int
 type Vegetables map[string]int
@@ -90,7 +93,7 @@ func buscarTabela(table string) ([]byte, error) {
 	var data []byte
 	var err error
 	log.Printf("tabela:", table)
-	data, err = query(cmd, db)
+	data, err = query2(cmd, db)
 	db.Close()
 	return data, err
 }
@@ -149,6 +152,66 @@ func query(comando string, db *sql.DB) (result []byte, error error) {
 	}
 
 	b, err = json.Marshal(cidades)
+	if err != nil {
+		fmt.Printf("Erro %s", err)
+	}
+	//fmt.Printf( string(b))
+
+	return b, err
+
+}
+func query2(comando string, db *sql.DB) (result []byte, error error) {
+
+	var res, err = db.Query(comando)
+
+	var b []byte
+	defer res.Close()
+	var tabela Tabela
+
+
+	var colunas, _ = res.Columns()
+	var tipos, _ = res.ColumnTypes()
+
+
+	for i,s :=  range colunas{
+		var col Coluna
+		col.nome = s
+		col.tipo = tipos[i].Name()
+		tabela.estrutura = append(tabela.estrutura, col)
+	}
+
+	log.Print("Estrutura Length:", len(tabela.estrutura))
+	if err != nil {
+		log.Printf("Erro ao recuperar dados")
+		log.Printf(err.Error())
+	} else {
+		log.Printf("Dados recuperado")
+
+		for res.Next() {
+			var novo Registro
+			cols,_ := res.Columns()
+			dados := make([]interface{}, len(cols))
+
+			for i,_ := range cols{
+
+			}
+
+			if err = res.Scan(dados...); err != nil {
+				log.Print("erro scan:",err)
+			}
+
+			log.Print("novo dados:",dados)
+			novo.dados = dados
+			tabela.registros = append(tabela.registros, novo)
+		}
+	}
+
+	log.Print("Conteudo:", tabela.registros[0].dados)
+
+	log.Print("Registros Length:", len(tabela.registros))
+
+
+	b, err = json.Marshal(tabela.registros)
 	if err != nil {
 		fmt.Printf("Erro %s", err)
 	}
