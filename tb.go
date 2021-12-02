@@ -10,7 +10,7 @@ import (
 	"text/template"
 )
 func main(){
-	test3()
+	test4()
 }
 func test1() {
 
@@ -101,4 +101,37 @@ func format(s string, v interface{}) string {
 	template.Must(t.Parse(s)).Execute(b, v)
 	fmt.Println(b.String())
 	return b.String()
+}
+
+
+
+func test4(){
+	var db, err = sql.Open("mysql","u475983679_aula:Senha@01!@tcp(sql395.main-hosting.eu:3306)/u475983679_aula")
+	if err != nil { log.Println(err.Error()) }
+	var rows,err2 = db.Query("select * from cidade")
+	if err2 != nil { log.Println(err.Error()) }
+	cols, _ := rows.Columns()
+
+	data := make(map[string]string)
+
+	if rows.Next() {
+		columns := make([]string, len(cols))
+		columnPointers := make([]interface{}, len(cols))
+		for i, _ := range columns {
+			columnPointers[i] = &columns[i]
+		}
+
+		rows.Scan(columnPointers...)
+
+		for i, colName := range cols {
+			data[colName] = columns[i]
+		}
+		for k, v := range data {
+			fmt.Printf("key[%s] value[%s]\n", k, v)
+		}
+
+	}
+
+
+
 }
