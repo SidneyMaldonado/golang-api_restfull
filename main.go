@@ -4,12 +4,13 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
-	_ "github.com/go-sql-driver/mysql"
 	"log"
 	"net/http"
 	"strings"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+	_ "github.com/go-sql-driver/mysql"
 )
 
 type Payload struct {
@@ -33,11 +34,11 @@ type Cidade struct {
 
 type Coluna struct {
 	ordem int
-	nome string
-	tipo string
+	nome  string
+	tipo  string
 }
 type Registro struct {
-	dados []interface{}
+	dados []string
 }
 
 type Tabela struct {
@@ -48,17 +49,17 @@ type Tabela struct {
 type Fruits map[string]int
 type Vegetables map[string]int
 
-func main() {
+func main2() {
 
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
-	r.Get("/{id}", func(w http.ResponseWriter, r *http.Request) { processGet(w,r)} )
+	r.Get("/{id}", func(w http.ResponseWriter, r *http.Request) { processGet(w, r) })
 	log.Printf("Server started...")
 	_ = http.ListenAndServe(":3000", r)
 
 }
 
-func processGet(w http.ResponseWriter, r *http.Request){
+func processGet(w http.ResponseWriter, r *http.Request) {
 
 	log.Printf("Iniciou get..." + r.URL.Path)
 	var response = []byte("")
@@ -68,7 +69,7 @@ func processGet(w http.ResponseWriter, r *http.Request){
 	table := routeparts[1]
 	log.Printf("Table: " + table)
 
-	if table =="favicon.ico"{
+	if table == "favicon.ico" {
 		return
 	}
 
@@ -168,12 +169,10 @@ func query2(comando string, db *sql.DB) (result []byte, error error) {
 	defer res.Close()
 	var tabela Tabela
 
-
 	var colunas, _ = res.Columns()
 	var tipos, _ = res.ColumnTypes()
 
-
-	for i,s :=  range colunas{
+	for i, s := range colunas {
 		var col Coluna
 		col.nome = s
 		col.tipo = tipos[i].Name()
@@ -189,18 +188,14 @@ func query2(comando string, db *sql.DB) (result []byte, error error) {
 
 		for res.Next() {
 			var novo Registro
-			cols,_ := res.Columns()
+			cols, _ := res.Columns()
 			dados := make([]interface{}, len(cols))
 
-			for i,_ := range cols{
-
-			}
-
 			if err = res.Scan(dados...); err != nil {
-				log.Print("erro scan:",err)
+				log.Print("erro scan:", err)
 			}
 
-			log.Print("novo dados:",dados)
+			log.Print("novo dados:", dados)
 			novo.dados = dados
 			tabela.registros = append(tabela.registros, novo)
 		}
@@ -209,7 +204,6 @@ func query2(comando string, db *sql.DB) (result []byte, error error) {
 	log.Print("Conteudo:", tabela.registros[0].dados)
 
 	log.Print("Registros Length:", len(tabela.registros))
-
 
 	b, err = json.Marshal(tabela.registros)
 	if err != nil {

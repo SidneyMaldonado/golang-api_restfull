@@ -4,20 +4,26 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	_ "github.com/go-sql-driver/mysql"
 	"log"
 	"strings"
 	"text/template"
+
+	_ "github.com/go-sql-driver/mysql"
 )
-func main(){
+
+func main() {
 	test4()
 }
 func test1() {
 
-	var db, err = sql.Open("mysql","u475983679_aula:Senha@01!@tcp(sql395.main-hosting.eu:3306)/u475983679_aula")
-	if err != nil { log.Println(err.Error()) }
+	var db, err = sql.Open("mysql", "u475983679_aula:Senha@01!@tcp(sql395.main-hosting.eu:3306)/u475983679_aula")
+	if err != nil {
+		log.Println(err.Error())
+	}
 	var rows, err2 = db.Query("select * from cidade")
-	if err2 != nil { log.Println(err.Error()) }
+	if err2 != nil {
+		log.Println(err.Error())
+	}
 
 	types, _ := rows.ColumnTypes()
 	for rows.Next() {
@@ -27,7 +33,7 @@ func test1() {
 		}
 		rows.Scan(row...)
 
-		for i,_ := range row{
+		for i, _ := range row {
 			log.Println("Dado:", row[i])
 		}
 
@@ -35,11 +41,15 @@ func test1() {
 
 }
 
-func test2(){
-	var db, err = sql.Open("mysql","u475983679_aula:Senha@01!@tcp(sql395.main-hosting.eu:3306)/u475983679_aula")
-	if err != nil { log.Println(err.Error()) }
-	var rows,err2 = db.Query("select * from cidade")
-	if err2 != nil { log.Println(err.Error()) }
+func test2() {
+	var db, err = sql.Open("mysql", "u475983679_aula:Senha@01!@tcp(sql395.main-hosting.eu:3306)/u475983679_aula")
+	if err != nil {
+		log.Println(err.Error())
+	}
+	var rows, err2 = db.Query("select * from cidade")
+	if err2 != nil {
+		log.Println(err.Error())
+	}
 
 	cols, _ := rows.Columns()
 	vals := make([]interface{}, len(cols))
@@ -59,16 +69,17 @@ func test2(){
 	b, _ := json.Marshal(result)
 	fmt.Println(string(b))
 
-
-
-
 }
 
-func test3(){
-	var db, err = sql.Open("mysql","u475983679_aula:Senha@01!@tcp(sql395.main-hosting.eu:3306)/u475983679_aula")
-	if err != nil { log.Println(err.Error()) }
+func test3() {
+	var db, err = sql.Open("mysql", "u475983679_aula:Senha@01!@tcp(sql395.main-hosting.eu:3306)/u475983679_aula")
+	if err != nil {
+		log.Println(err.Error())
+	}
 	var rows, err2 = db.Query("select * from cidade")
-	if err2 != nil { log.Println(err.Error()) }
+	if err2 != nil {
+		log.Println(err.Error())
+	}
 
 	cols, _ := rows.Columns()
 
@@ -103,18 +114,31 @@ func format(s string, v interface{}) string {
 	return b.String()
 }
 
+type Grupo struct {
+	linhas []Algo
+}
 
+type Algo struct {
+	dados []string
+}
 
-func test4(){
-	var db, err = sql.Open("mysql","u475983679_aula:Senha@01!@tcp(sql395.main-hosting.eu:3306)/u475983679_aula")
-	if err != nil { log.Println(err.Error()) }
-	var rows,err2 = db.Query("select * from cidade")
-	if err2 != nil { log.Println(err.Error()) }
+func test4() {
+	var db, err = sql.Open("mysql", "u475983679_aula:Senha@01!@tcp(sql395.main-hosting.eu:3306)/u475983679_aula")
+	if err != nil {
+		log.Println(err.Error())
+	}
+	var rows, err2 = db.Query("select * from cidade")
+	if err2 != nil {
+		log.Println(err.Error())
+	}
 	cols, _ := rows.Columns()
 
 	data := make(map[string]string)
 
-	if rows.Next() {
+	var grupo Grupo
+
+	for rows.Next() {
+
 		columns := make([]string, len(cols))
 		columnPointers := make([]interface{}, len(cols))
 		for i, _ := range columns {
@@ -126,12 +150,19 @@ func test4(){
 		for i, colName := range cols {
 			data[colName] = columns[i]
 		}
-		for k, v := range data {
-			fmt.Printf("key[%s] value[%s]\n", k, v)
+
+		var lista Algo
+		for _, v := range data {
+			//	fmt.Printf("key[%s] value[%s]\n", k, v)
+			lista.dados = append(lista.dados, v)
 		}
+
+		grupo.linhas = append(grupo.linhas, lista)
 
 	}
 
-
-
+	fmt.Println(grupo.linhas)
+	for i, a := range grupo.linhas {
+		fmt.Printf("registro: [%d] => [%s] [%s] [%s]  \n", i, a.dados[0], a.dados[2], a.dados[1])
+	}
 }
