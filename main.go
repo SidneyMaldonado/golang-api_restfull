@@ -49,7 +49,7 @@ type Tabela struct {
 type Fruits map[string]int
 type Vegetables map[string]int
 
-func main2() {
+func main() {
 
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
@@ -93,7 +93,7 @@ func buscarTabela(table string) ([]byte, error) {
 	var db, _ = conectarBanco()
 	var data []byte
 	var err error
-	log.Printf("tabela:", table)
+	log.Printf("tabela a processar: [%s]", table)
 	data, err = query2(cmd, db)
 	db.Close()
 	return data, err
@@ -115,8 +115,8 @@ func getJsonResponse() ([]byte, error) {
 
 func conectarBanco() (*sql.DB, error) {
 
-	//	var banco, err = sql.Open("mysql","u475983679_aula:Senha@01!@tcp(sql395.main-hosting.eu:3306)/u475983679_aula")
-	var banco, err = sql.Open("mysql", "root:@tcp(localhost:3306)/sistema")
+	var banco, err = sql.Open("mysql", "u475983679_aula:Senha@01!@tcp(sql395.main-hosting.eu:3306)/u475983679_aula")
+	//var banco, err = sql.Open("mysql", "root:@tcp(localhost:3306)/sistema")
 	if err != nil {
 		log.Printf("Error %s when opening DB\n", err)
 	} else {
@@ -163,10 +163,12 @@ func query(comando string, db *sql.DB) (result []byte, error error) {
 }
 func query2(comando string, db *sql.DB) (result []byte, error error) {
 
+	fmt.Println("iniciou query2")
 	var res, err = db.Query(comando)
 
 	var b []byte
 	defer res.Close()
+	fmt.Println("fechou o banco")
 	var tabela Tabela
 
 	var colunas, _ = res.Columns()
@@ -190,18 +192,31 @@ func query2(comando string, db *sql.DB) (result []byte, error error) {
 			var novo Registro
 			cols, _ := res.Columns()
 			dados := make([]interface{}, len(cols))
+			columns := make([]string, len(cols))
+			for i, _ := range columns {
+				dados[i] = &columns[i]
+			}
 
 			if err = res.Scan(dados...); err != nil {
 				log.Print("erro scan:", err)
 			}
 
+			for _, d := range columns {
+
+				fmt.Printf("Conteudo: [%s]", d)
+				novo.dados = append(novo.dados, d)
+
+			}
+
 			log.Print("novo dados:", dados)
-			novo.dados = dados
 			tabela.registros = append(tabela.registros, novo)
 		}
 	}
 
-	log.Print("Conteudo:", tabela.registros[0].dados)
+	for i, reg := range tabela.registros {
+		log.Print("Conteudo: ", i, reg)
+
+	}
 
 	log.Print("Registros Length:", len(tabela.registros))
 
@@ -209,7 +224,7 @@ func query2(comando string, db *sql.DB) (result []byte, error error) {
 	if err != nil {
 		fmt.Printf("Erro %s", err)
 	}
-	//fmt.Printf( string(b))
+	fmt.Printf(string(b))
 
 	return b, err
 

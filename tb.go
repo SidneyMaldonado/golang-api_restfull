@@ -11,7 +11,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-func main() {
+func main2() {
 	test4()
 }
 func test1() {
@@ -162,7 +162,12 @@ func test4() {
 	}
 
 	fmt.Println(grupo.linhas)
-	for i, a := range grupo.linhas {
-		fmt.Printf("registro: [%d] => [%s] [%s] [%s]  \n", i, a.dados[0], a.dados[2], a.dados[1])
+	for i, reg := range grupo.linhas {
+		fmt.Printf("registro: [%d] => ", i)
+
+		for _, a := range reg.dados {
+			fmt.Printf(" [%s] ", a)
+		}
+		fmt.Printf("\n")
 	}
 }
